@@ -1,0 +1,73 @@
+<!Doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<title>Customers | Store</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+</head>
+
+<body>
+	<div ng-controller="OrdersController" class="container">
+
+		<h4>Add a new order</h4>
+		<form class="form-inline " >
+			<div class="form-group">
+				<label  for="name">Customer Name</label>
+
+				<select class='browser-default' width="100%" class="col-sm-5" ng-model='newOrder.cust_name'>
+					<option value='' selected disabled></option>
+					<option ng-repeat='customer in customers' value='{{customer.name}}'>{{ customer.name }}</option>
+				</select>
+			</div>
+			<br>
+			<div class="form-group">
+				<label for="qty">Order/Qty</label>
+				<input type="number" min="1" max="50" ng-model='newOrder.qty'>
+				<!-- <select class='browser-default' width="100%" class="col-sm-4" ng-model='newOrder.qty'>
+					<option value='' selected disabled></option>
+					<option ng-repeat='number in numbers' value='{{number}}'>{{number}}</option>
+				</select> -->
+				<select class='browser-default' width="100%" class="col-sm-8" ng-model='newOrder.prod_name'>
+					<option value='' selected disabled></option>
+					<option ng-repeat="product in products" value='{{product.name}}'>{{ product.name }}</option>
+				</select>
+			</div>
+			<br>
+			<button type="submit" class="btn btn-default" ng-click='addNewOrder()'>Order</button>
+		</form>
+		<br>
+		<div  class="col-md-5-offset-4" >
+			<input type="text"  ng-model="filter_name" placeholder="filter">
+		</div>
+		<br>
+
+		<div class="col-md-10-offset-1" >
+      		<table class="table table-bordered table-striped" >
+		        <thead>
+		          <tr>
+		            <td>Customer Name</td>
+		            <td>Product</td>
+		            <td>Quantity</td>
+		            <td>Date</td>
+		          </tr> 
+		        </thead>
+
+		        <tbody ng-repeat="order in orders | filter: filter_name">
+		          <tr>
+		            <td> {{ order.cust_name }} </td>
+		            <td> {{ order.prod_name }}  </td>
+		            <td> {{ order.qty }} </td>
+		            <td> {{ order.createdAt | date:'MMMM d, yyyy' }} </td>
+		          </tr>
+		        </tbody>
+    		</table>
+
+    	</div>
+
+	</div>
+
+</body>
+</html>

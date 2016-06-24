@@ -1,0 +1,169 @@
+<!Doctype html>
+<html ng-app="myApp">
+<head>
+	<meta charset="UTF-8" />
+	<title>Customers & Orders</title>
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+  <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular.min.js'/></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular-route.min.js"></script>
+  <script>
+  	var myAppmodule = angular.module('myApp', ['ngRoute']);
+
+	//use the config module to set up routing:
+  	myAppmodule.config(function ($routeProvider) {
+  	$routeProvider
+  		.when('/customers', {
+  			templateUrl: 'partials/customers.html'
+  		})
+  		.when('/orders', {
+  			templateUrl: 'partials/orders.html'
+  		})
+  		.otherwise({
+  			redirectTo: '/customers'
+  		});
+	});
+	
+	myAppmodule.factory('CustomerFactory', function($http) {
+		var factory = {};
+		var customers = [];
+
+		factory.getCustomers = function(callback) {
+			$http.get('/all_customers').success(function(output){
+				customers = output;
+				callback(customers);
+			})
+		}
+		factory.addNewCust = function(customer, callback) {
+			console.log("this is the customer to be added: ", customer);
+			$http.post('/add_customer', {name: customer.name}).success(function(output){
+				callback(output);
+				// if (typeof output.property != "error") {
+				// 	customers = output;
+				// }
+				// else{
+				// 	callback(output);
+				// }
+			})
+		}
+		factory.remove = function(customer) {
+			console.log("in factory, to delete this cust: ", customer._id);
+			$http.post('/delete_cust/'+customer._id).success(function(output){
+				console.log("customer to be deleted: ", customer);
+				// callback(output);
+			})
+		}
+		return factory;
+	})
+	myAppmodule.factory('OrderFactory', function($http){
+
+		var factory = {};
+		var orders = [];
+
+		factory.getOrders = function(callback) {
+			$http.get('/all_orders').success(function(output){
+				orders = output;
+				callback(orders);
+			})
+		}
+
+		factory.addOrder = function(newOrder) {
+			console.log("in OrderFactory addOrder");
+			$http.post('/add_order', newOrder).success(function(output){
+				orders = output;
+			})
+		}
+		return factory;
+	})
+	myAppmodule.controller('CustomerController', function($scope, CustomerFactory) {
+
+		CustomerFactory.getCustomers(function(data){
+			$scope.customers = data;
+			console.log("list of customers: ", data);
+		});
+
+		$scope.addCustomer = function() {
+			console.log($scope.newCustomer);
+			CustomerFactory.addNewCust($scope.newCustomer, function(data){
+				console.log("this is typeof data.property: ",("error" in data));
+				if ("error" in data) {
+					console.log("there is an error and error message should display");
+					$scope.duplicate_err = true;
+				} else {
+					$scope.duplicate_err = false;
+					
+				}
+				CustomerFactory.getCustomers(function(data){
+					$scope.customers = data;
+					$scope.newCustomer.name = "";
+				});
+			});
+			
+			
+		}
+		$scope.delCustomer = function(customer) {
+			console.log("in CustomerController to delete");
+			CustomerFactory.remove(customer);
+			CustomerFactory.getCustomers(function(data){
+				$scope.customers = data;
+			})
+		}
+
+	})
+	myAppmodule.controller('OrdersController', function($scope, CustomerFactory, OrderFactory){
+
+		// var numbers = [];
+		$scope.products =[{name: 'Nike Shoes'},
+						{name: 'Apple Watch'},
+						{name: 'Sony TV'},
+						{name: 'Levis Jeans'},
+						{name: 'North Face Jacket'},
+						{name: 'Pebble Watch'},
+						{name: 'Tumi Bag'},
+						{name: 'Prada HandBag'},
+						{name: 'Nikkon SLR Camera'},
+						{name: 'Mizuno Shoes'},
+						{name: 'Polo Sunglasses'},
+						{name: 'Dry Eraser white-board marker'},
+						{name: 'Royce Choclates'}
+		];
+
+
+		// for (var i=1; i<=100; i++){
+		// 	$scope.numbers[i] = i;
+		// }
+
+		OrderFactory.getOrders(function(data) {
+			$scope.orders = data;
+		})
+
+		CustomerFactory.getCustomers(function(data){
+			$scope.customers = data;
+			console.log("list of customers: ", data);
+		});
+
+		$scope.addNewOrder = function() {
+			console.log("in OrderFactory, adding order");
+			OrderFactory.addOrder($scope.newOrder);
+			OrderFactory.getOrders(function(data) {
+				$scope.orders= data;
+			})
+		};
+	})
+
+  </script>
+</head>
+
+<body>
+	<div class="container">
+		<a href="#/customers">Customers</a> | <a href="#/orders">Orders</a>
+		<div ng-view="">
+
+		</div>
+	</div>
+</body>
+</html>
